@@ -1,18 +1,12 @@
-from asyncio.events import AbstractEventLoop, get_event_loop
-from asyncio.tasks import Task
 from ctypes import FormatError
-from os import close, error
-from re import sub
 import threading
 from spider import Spider;
 import asyncio;
 import json;
 import redis;
-from typing import Any, Dict, Union;
+from typing import Any, Dict, List;
 import time;
 import atexit;
-
-
 
 listenMap: Dict[int, bool] = dict()
 
@@ -117,8 +111,8 @@ def initRedis(data: Any) -> bool:
         print(f'所有 Websocket 程序已經關閉。')
         exit()
 
-def hookSpider(listen: int[str]):
-    Spider.TO_LISTEN.extend(listen)
+def hookSpider(listen: List[str]):
+    Spider.TO_LISTEN = listen
     for cmd in Spider.TO_LISTEN:
         Spider._COMMAND_HANDLERS[cmd] = lambda client, command, t=cmd: client.on_recevie_command(t, command) 
     

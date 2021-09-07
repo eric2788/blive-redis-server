@@ -3,6 +3,9 @@
     "port": 6379,
     "listens":
     [
-     "DANMU_MSG", "SEND_GIFT", "GUARD_BUY", "SUPER_CHAT_MESSAGE"
+     "DANMU_MSG", 
+     "SEND_GIFT", 
+     "GUARD_BUY", 
+     "SUPER_CHAT_MESSAGE"
     ]
 }
