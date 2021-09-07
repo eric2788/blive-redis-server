@@ -53,10 +53,10 @@ def on_receive_command(message):
         stopListen(room=room_id)
 
 def runRoom(room: int):
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(startListen(room))
-    loop.close()
-    #asyncio.run(startListen(room=room_id))
+    #loop = asyncio.new_event_loop()
+    #loop.run_until_complete(startListen(room))
+    #loop.close()
+    asyncio.run(startListen(room))
 
 def send_live_room_status(room: int, status: str):
     info = {
@@ -67,8 +67,9 @@ def send_live_room_status(room: int, status: str):
     r.publish("live-room-status", data)
 
 def on_program_terminate():
-    print(f'程序正在關閉...')
+    print(f'程序將在3秒後關閉...')
     try:
+        time.sleep(3)
         send_live_room_status(-1, "server-closed")
         r.delete("live_room_listening")
         p.close()
@@ -77,8 +78,6 @@ def on_program_terminate():
         print(f'關閉 Redis 時出現錯誤: {e}')
     except RuntimeError as e:
         print(f'關閉程序時出現錯誤: {e}')
-    finally:
-        exit
 
 def initRedis(data: Any) -> bool:
     global r, p
