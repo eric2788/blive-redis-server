@@ -64,7 +64,6 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
         send_live_room_status(-1, "server-started")
         atexit.register(on_program_terminate)
         print(f'bili-redis-server 成功啟動，正在監聽指令...')
-        started = [] # 防止重複
         while True:
             time.sleep(1)
             channels = r.pubsub_channels("blive:*")
@@ -77,8 +76,6 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
                     print(f'位置房間號: {room}')
             listening = set(listenMap.keys())
             for to_listen in subscibing - listening:
-                if to_listen in started:
-                    continue
                 t = threading.Thread(target=runRoom, args=(to_listen, ))
                 t.start()
                 # show subscribers
@@ -87,7 +84,6 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
                     (channel, num) = sub
                     room = channel.decode('utf-8')
                     print(f'目前有 {num} 位訂閱者正在監控 {room}')
-                started.append(to_listen)
             for to_stop in listening - subscibing:
                 stopListen(to_stop)
     except redis.exceptions.ConnectionError as e:
