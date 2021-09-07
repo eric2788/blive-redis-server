@@ -1,12 +1,13 @@
-# blivedm
+本 python 程序 為一個 按需打開WS的監控伺服器，透過監聽 pubsub channels 中含 blive:<房間號> 格式的 channel 來打開所需的B站直播間WS監控。
+當監測到目前正在監控的 直播間號 不在 pubsub channels 內的列表時，它將自動關閉該房間號的WS監控。
 
-python3获取bilibili直播弹幕，使用websocket协议
+# 使用方式
+1. 在 settings/config.json 中輸入正確的 redis server 資料和需要監控的指令
+2. 打開 redis server 後 運行此 python 程序
+3. 在其他連入該 redis sever 的程序中 / 使用 redis-client 訂閱格式為 blive:<房間號> 的 channel
+4. 開始接收 直播間 websocket 資料
+5. 如要停止監控，則取消訂閱，如程序發現該頻道沒有任何訂閱，將會自動關閉WS監控
 
-[协议解释](https://blog.csdn.net/xfgryujk/article/details/80306776)（有点过时了，总体是没错的）
+# 鳴謝
 
-基于本库开发的一个应用：[blivechat](https://github.com/xfgryujk/blivechat)
-
-
-## 使用说明
-1. 使用`pip install -r requirements.txt`命令安装依赖，具体有目录下[sample.py](./sample.py)和[blivedm.py](./blivedm.py)用到的相关python依赖
-2. 将[sample.py](./sample.py)文件中的room_id替换为直播间ID
+blivedm 作者 (詳見 forked from)
