@@ -1,4 +1,3 @@
-from ctypes import FormatError
 import threading
 from spider import Spider;
 import asyncio;
@@ -62,9 +61,9 @@ def initRedis(data: Any) -> bool:
     global r
     try:
         r = redis.Redis(host= data['host'], port= int(data['port']), db=0)
-        print(f'bili-redis-server 成功啟動，正在監聽指令...')
         send_live_room_status(-1, "server-started")
         atexit.register(on_program_terminate)
+        print(f'bili-redis-server 成功啟動，正在監聽指令...')
         started = [] # 防止重複
         while True:
             time.sleep(1)
@@ -74,7 +73,7 @@ def initRedis(data: Any) -> bool:
                 try:
                     room_id = int(str.replace(room.decode('utf-8'), "blive:", ""))
                     subscibing.add(room_id)
-                except FormatError:
+                except ValueError:
                     print(f'位置房間號: {room}')
             listening = set(listenMap.keys())
             for to_listen in subscibing - listening:
@@ -122,7 +121,7 @@ if __name__ == '__main__':
     data = json.load(f)
     listen = data['listens']
     hookSpider(listen)
-    print(f'正在監控 {Spider.TO_LISTEN}')
+    print(f'將會監控的指令: {Spider.TO_LISTEN}')
     initRedis(data)
 
     
