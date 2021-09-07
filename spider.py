@@ -24,6 +24,7 @@ class Spider(BLiveClient):
                 'title': self.title,
                 'name': self.name,
                 'room': self.nick_id,
+                'cover': self.user_cover,
                 'real_room': self.room_id,
                 'content': data
             }
