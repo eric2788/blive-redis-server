@@ -15,6 +15,7 @@ class Spider(BLiveClient):
         self.user_cover = None
         self.name = name
         self.redis = redis
+        self.get_user_info()
 
     def to_redis_message(self, command, data):
         info = {
@@ -57,9 +58,11 @@ class Spider(BLiveClient):
     _COMMAND_HANDLERS = BLiveClient._COMMAND_HANDLERS.copy()
 
     async def on_recevie_command(self, t, command):
-         print(f'received command {t} from {self.nick_id} ({self.room_id})')
-         data = self.to_redis_message(t, command)
-         self.redis.publish(f'blive:{self.nick_id}', data)
+        if not self.name:
+            self.get_user_info()
+        print(f'received command {t} from {self.nick_id} ({self.room_id})')
+        data = self.to_redis_message(t, command)
+        self.redis.publish(f'blive:{self.nick_id}', data)
 
     async def _on_live(self, command):
         if self.live_status:
