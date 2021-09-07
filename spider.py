@@ -5,6 +5,8 @@ import json
 
 class Spider(BLiveClient):
 
+    TO_LISTEN = []
+
     def __init__(self, room_id: int, redis: Redis, name: str = None): # name can make custom
         super().__init__(room_id)
         self.nick_id = room_id
@@ -56,7 +58,7 @@ class Spider(BLiveClient):
     async def on_recevie_command(self, t, command):
          print(f'received command {t} from {self.nick_id} ({self.room_id})')
          data = self.to_redis_message(t, command)
-         self.redis.publish(str(self.nick_id), data)
+         self.redis.publish(f'blive:{self.nick_id}', data)
 
     async def _on_live(self, command):
         if self.live_status:
@@ -66,7 +68,7 @@ class Spider(BLiveClient):
             self.get_user_info()
         self.live_status = True
         data = self.to_redis_message('LIVE', command)
-        self.redis.publish(str(self.nick_id), data)
+        self.redis.publish(f'blive:{self.nick_id}', data)
         
 
     async def _on_prepare(self, command):
@@ -77,8 +79,5 @@ class Spider(BLiveClient):
     _COMMAND_HANDLERS['LIVE'] = _on_live
 
     _COMMAND_HANDLERS['PREPARING'] = _on_prepare
-
-    for cmd in ('DANMU_MSG', 'SEND_GIFT', 'GUARD_BUY', 'SUPER_CHAT_MESSAGE'):
-        _COMMAND_HANDLERS[cmd] = lambda client, command, t=cmd: client.on_recevie_command(t, command)
 
 

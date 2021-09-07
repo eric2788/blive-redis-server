@@ -1,12 +1,14 @@
 from asyncio.events import AbstractEventLoop, get_event_loop
 from asyncio.tasks import Task
+from ctypes import FormatError
 from os import close, error
+from re import sub
 import threading
 from spider import Spider;
 import asyncio;
 import json;
 import redis;
-from typing import Any, Dict;
+from typing import Any, Dict, Union;
 import time;
 import atexit;
 
@@ -37,25 +39,10 @@ async def startListen(room: int, name: str = None):
 
 def stopListen(room: int):
     listenMap[room] = False
-        
-
-def on_receive_command(message):
-    print(f'收到指令 {message}')
-    if message['type'] != 'message':
-        return
-    data = json.loads(message['data'].decode('utf-8'))
-    room_id = data['id']
-    cmd = data['cmd']
-    if cmd == 'listen':
-        t = threading.Thread(target=runRoom, args=(room_id, ))
-        t.start()
-    elif cmd == 'terminate':
-        stopListen(room=room_id)
 
 def runRoom(room: int):
     #loop = asyncio.new_event_loop()
     #loop.run_until_complete(startListen(room))
-    #loop.close()
     asyncio.run(startListen(room))
 
 def send_live_room_status(room: int, status: str):
@@ -67,12 +54,10 @@ def send_live_room_status(room: int, status: str):
     r.publish("live-room-status", data)
 
 def on_program_terminate():
-    print(f'程序將在3秒後關閉...')
+    print(f'程序正在關閉...')
     try:
-        time.sleep(3)
         send_live_room_status(-1, "server-closed")
         r.delete("live_room_listening")
-        p.close()
         r.close()
     except redis.exceptions.ConnectionError as e:
         print(f'關閉 Redis 時出現錯誤: {e}')
@@ -80,22 +65,38 @@ def on_program_terminate():
         print(f'關閉程序時出現錯誤: {e}')
 
 def initRedis(data: Any) -> bool:
-    global r, p
+    global r
     try:
         r = redis.Redis(host= data['host'], port= int(data['port']), db=0)
-        p = r.pubsub()
-        p.subscribe("command")
         print(f'bili-redis-server 成功啟動，正在監聽指令...')
         send_live_room_status(-1, "server-started")
         atexit.register(on_program_terminate)
+        started = [] # 防止重複
         while True:
-            time.sleep(0.1)
-            msg = p.get_message()
-            if msg:
+            time.sleep(1)
+            channels = r.pubsub_channels("blive:*")
+            subscibing = set({})
+            for room in channels:
                 try:
-                    on_receive_command(msg)
-                except Exception as e:
-                    print(f'處理指令時出現錯誤 {msg}: {e}')
+                    room_id = int(str.replace(room.decode('utf-8'), "blive:", ""))
+                    subscibing.add(room_id)
+                except FormatError:
+                    print(f'位置房間號: {room}')
+            listening = set(listenMap.keys())
+            for to_listen in subscibing - listening:
+                if to_listen in started:
+                    continue
+                t = threading.Thread(target=runRoom, args=(to_listen, ))
+                t.start()
+                # show subscribers
+                subscribers = r.pubsub_numsub(room)
+                for sub in subscribers:
+                    (channel, num) = sub
+                    room = channel.decode('utf-8')
+                    print(f'目前有 {num} 位訂閱者正在監控 {room}')
+                started.append(to_listen)
+            for to_stop in listening - subscibing:
+                stopListen(to_stop)
     except redis.exceptions.ConnectionError as e:
         print(f'連接到 Redis 時出現錯誤: {e}')
         print(f'等待五秒後重連...')
@@ -115,12 +116,19 @@ def initRedis(data: Any) -> bool:
                 time.sleep(1)
         print(f'所有 Websocket 程序已經關閉。')
         exit()
-        
+
+def hookSpider(listen: int[str]):
+    Spider.TO_LISTEN.extend(listen)
+    for cmd in Spider.TO_LISTEN:
+        Spider._COMMAND_HANDLERS[cmd] = lambda client, command, t=cmd: client.on_recevie_command(t, command) 
     
 
 if __name__ == '__main__':
     f = open('./settings/config.json')
     data = json.load(f)
+    listen = data['listens']
+    hookSpider(listen)
+    print(f'正在監控 {Spider.TO_LISTEN}')
     initRedis(data)
 
     
