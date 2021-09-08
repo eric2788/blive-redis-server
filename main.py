@@ -61,11 +61,11 @@ def on_program_terminate():
     except RuntimeError as e:
         print(f'關閉程序時出現錯誤: {e}')
 
-def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
+def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0, password: str = None) -> bool:
     global r
     started = set() #防止重複
     try:
-        r = redis.Redis(host, port, db)
+        r = redis.Redis(host, port, db, password)
         send_live_room_status(-1, "server-started")
         print(f'bili-redis-server {VERSION} 成功啟動，正在監聽指令...')
         atexit.register(on_program_terminate)
@@ -129,7 +129,8 @@ if __name__ == '__main__':
     listen = data['listens']
     hookSpider(listen)
     print(f'將會監控的指令: {Spider.TO_LISTEN}')
-    initRedis(data['host'], data['port'], data['database'])
+    password = data['password'] if 'password' in data and data['password'] else None
+    initRedis(data['host'], data['port'], data['database'], password)
 
     
     
