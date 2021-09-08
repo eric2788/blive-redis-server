@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.4'
+VERSION = 'v0.5'
 
 listenMap: Dict[int, bool] = dict()
 
@@ -89,15 +89,16 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0, password: 
             for to_stop in listening - subscibing:
                 stopListen(to_stop)
                 started.discard(to_stop)
-    except redis.exceptions.ConnectionError as e:
+    except redis.exceptions.RedisError as e:
         print(f'連接到 Redis 時出現錯誤: {e}')
         print(f'等待五秒後重連...')
         try:
             time.sleep(5)
-            return initRedis(host, port, db)
+            return initRedis(host, port, db, password)
         except KeyboardInterrupt:
             print(f'程序在等待重啟時被中止')
             exit()
+
     except KeyboardInterrupt:
         print(f'程序被手動中止')
         if len(listenMap) > 0:
@@ -124,6 +125,7 @@ def showSubscribers():
     
 
 if __name__ == '__main__':
+    print(f'正在啟動 blive-redis-server 版本 {VERSION}')
     f = open('./settings/config.json')
     data = json.load(f)
     listen = data['listens']
