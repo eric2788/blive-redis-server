@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.2'
+VERSION = 'v0.3'
 
 listenMap: Dict[int, bool] = dict()
 
@@ -25,7 +25,7 @@ async def startListen(room: int, name: str = None):
     print(f'{room} 直播間初始化完成。')
     r.sadd("live_room_listening", room)
     send_live_room_status(room, "started")
-    while listenMap[room] == True:
+    while room in listenMap and listenMap[room] == True:
         await asyncio.sleep(1)
     await task.close()
     print(f'已停止監聽直播間 {room}')
@@ -63,6 +63,7 @@ def on_program_terminate():
 
 def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
     global r
+    started = set() #防止重複
     try:
         r = redis.Redis(host, port, db)
         send_live_room_status(-1, "server-started")
@@ -80,10 +81,14 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
                     print(f'位置房間號: {room}')
             listening = set(listenMap.keys())
             for to_listen in subscibing - listening:
+                if to_listen in started:
+                    continue
                 t = threading.Thread(target=runRoom, args=(to_listen, ))
                 t.start()
+                started.add(to_listen)
             for to_stop in listening - subscibing:
                 stopListen(to_stop)
+                started.discard(to_stop)
     except redis.exceptions.ConnectionError as e:
         print(f'連接到 Redis 時出現錯誤: {e}')
         print(f'等待五秒後重連...')
