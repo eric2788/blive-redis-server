@@ -16,7 +16,7 @@ class Spider(BLiveClient):
         self.name = name
         self.redis = redis
         self.live_status = False
-        self.get_live_info(roomId=room_id)
+        self.get_live_info()
         self.get_user_info()
 
     def to_redis_message(self, command, data):
@@ -34,8 +34,8 @@ class Spider(BLiveClient):
         }
         return json.dumps(info)
 
-    def get_live_info(self, roomId: int =None):
-        r = requests.get('https://api.live.bilibili.com/room/v1/Room/get_info?room_id=%s' % roomId if roomId else self.room_id,
+    def get_live_info(self):
+        r = requests.get('https://api.live.bilibili.com/room/v1/Room/get_info?room_id=%s' % self.nick_id,
                          headers={
                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                                            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'})
