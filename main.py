@@ -78,12 +78,6 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
             for to_listen in subscibing - listening:
                 t = threading.Thread(target=runRoom, args=(to_listen, ))
                 t.start()
-                # show subscribers
-                subscribers = r.pubsub_numsub(room)
-                for sub in subscribers:
-                    (channel, num) = sub
-                    room = channel.decode('utf-8')
-                    print(f'目前有 {num} 位訂閱者正在監控 {room}')
             for to_stop in listening - subscibing:
                 stopListen(to_stop)
     except redis.exceptions.ConnectionError as e:
@@ -110,6 +104,14 @@ def hookSpider(listen: List[str]):
     Spider.TO_LISTEN = listen
     for cmd in Spider.TO_LISTEN:
         Spider._COMMAND_HANDLERS[cmd] = lambda client, command, t=cmd: client.on_recevie_command(t, command) 
+
+def showSubscribers():
+    # show subscribers
+    subscribers = r.pubsub_numsub("blive:*")
+    for sub in subscribers:
+        (channel, num) = sub
+        room = channel.decode('utf-8')
+        print(f'目前有 {num} 位訂閱者正在監控 {room}')
     
 
 if __name__ == '__main__':
