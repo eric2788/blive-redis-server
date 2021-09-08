@@ -3,7 +3,7 @@ from spider import Spider;
 import asyncio;
 import json;
 import redis;
-from typing import Any, Dict, List;
+from typing import Dict, List;
 import time;
 import atexit;
 
@@ -45,6 +45,7 @@ def send_live_room_status(room: int, status: str):
     }
     data = json.dumps(info)
     r.publish("live-room-status", data)
+        
 
 def on_program_terminate():
     print(f'程序正在關閉...')
@@ -62,8 +63,8 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
     try:
         r = redis.Redis(host, port, db)
         send_live_room_status(-1, "server-started")
-        atexit.register(on_program_terminate)
         print(f'bili-redis-server 成功啟動，正在監聽指令...')
+        atexit.register(on_program_terminate)
         while True:
             time.sleep(1)
             channels = r.pubsub_channels("blive:*")
@@ -85,7 +86,7 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
         print(f'等待五秒後重連...')
         try:
             time.sleep(5)
-            return initRedis(data)
+            return initRedis(host, port, db)
         except KeyboardInterrupt:
             print(f'程序在等待重啟時被中止')
             exit()
