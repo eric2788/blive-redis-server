@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.3'
+VERSION = 'v0.4'
 
 listenMap: Dict[int, bool] = dict()
 
