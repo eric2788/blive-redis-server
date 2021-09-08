@@ -7,6 +7,9 @@ from typing import Dict, List;
 import time;
 import atexit;
 
+
+VERSION = 'v0.2'
+
 listenMap: Dict[int, bool] = dict()
 
 async def startListen(room: int, name: str = None):
@@ -63,7 +66,7 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0) -> bool:
     try:
         r = redis.Redis(host, port, db)
         send_live_room_status(-1, "server-started")
-        print(f'bili-redis-server 成功啟動，正在監聽指令...')
+        print(f'bili-redis-server {VERSION} 成功啟動，正在監聽指令...')
         atexit.register(on_program_terminate)
         while True:
             time.sleep(1)
