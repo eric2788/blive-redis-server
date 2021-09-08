@@ -15,6 +15,7 @@ class Spider(BLiveClient):
         self.user_cover = None
         self.name = name
         self.redis = redis
+        self.live_status = False
         self.get_live_info(roomId=room_id)
         self.get_user_info()
 
