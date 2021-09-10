@@ -41,7 +41,10 @@ class Spider(BLiveClient):
                                            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'})
 
         if r.status_code == 200:
-            data = r.json()['data']
+            res = r.json()
+            if res['code'] == 1:
+                raise BLiveSpiderError(res['msg'])
+            data = res['data']
             self.title = data['title']
             self.bilibili_uid = data['uid']
             self.user_cover = data['user_cover']
@@ -85,5 +88,9 @@ class Spider(BLiveClient):
     _COMMAND_HANDLERS['LIVE'] = _on_live
 
     _COMMAND_HANDLERS['PREPARING'] = _on_prepare
+
+
+class BLiveSpiderError(Exception):
+    pass
 
 

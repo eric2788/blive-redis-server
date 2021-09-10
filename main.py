@@ -1,5 +1,5 @@
 import threading
-from spider import Spider;
+from spider import BLiveSpiderError, Spider;
 import asyncio;
 import json;
 import redis;
@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.5'
+VERSION = 'v0.6'
 
 listenMap: Dict[int, bool] = dict()
 
@@ -18,10 +18,17 @@ async def startListen(room: int, name: str = None):
         send_live_room_status(room, "existed")
         return
     print(f'正在初始化直播間 {room}')
-    task = Spider(room, r, name)
-    await task.init_room()
-    task.start()
-    listenMap[room] = True
+
+    try:
+        task = Spider(room, r, name)
+        await task.init_room()
+        task.start()
+        listenMap[room] = True
+    except BLiveSpiderError as e:
+        print(f'初始化直播間 {room} 時出現錯誤: {e}')
+        print(f'已停止監聽此直播間。')
+        return
+    
     print(f'{room} 直播間初始化完成。')
     r.sadd("live_room_listening", room)
     send_live_room_status(room, "started")
