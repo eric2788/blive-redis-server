@@ -31,6 +31,12 @@ async def startListen(room: int, name: str = None):
         started.remove(room)
         excepted.add(str(room))
         return
+    except Exception as e:
+        print(f'初始化直播間 {room} 時出現錯誤: {e}')
+        send_live_room_status(room, f"error:{e}")
+        print(f'五秒後重試...')
+        await asyncio.sleep(5)
+        return await startListen(room, name)
     
     print(f'{room} 直播間初始化完成。')
     r.sadd("live_room_listening", room)
