@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.6'
+VERSION = 'v0.7'
 
 listenMap: Dict[int, bool] = dict()
 
@@ -26,6 +26,7 @@ async def startListen(room: int, name: str = None):
         listenMap[room] = True
     except BLiveSpiderError as e:
         print(f'初始化直播間 {room} 時出現錯誤: {e}')
+        send_live_room_status(room, f"error:{e}")
         print(f'已停止監聽此直播間。')
         return
     
