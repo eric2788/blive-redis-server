@@ -28,6 +28,8 @@ async def startListen(room: int, name: str = None):
         print(f'初始化直播間 {room} 時出現錯誤: {e}')
         send_live_room_status(room, f"error:{e}")
         print(f'已停止監聽此直播間。')
+        started.remove(room)
+        excepted.add(str(room))
         return
     
     print(f'{room} 直播間初始化完成。')
@@ -70,8 +72,9 @@ def on_program_terminate():
         print(f'關閉程序時出現錯誤: {e}')
 
 def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0, password: str = None) -> bool:
-    global r
+    global r, excepted, started
     started = set() #防止重複
+    excepted = set()
     try:
         r = redis.Redis(host, port, db, password)
         send_live_room_status(-1, "server-started")
@@ -82,11 +85,16 @@ def initRedis(host: str = "127.0.0.1", port: int = 6379, db: int = 0, password: 
             channels = r.pubsub_channels("blive:*")
             subscibing = set({})
             for room in channels:
+                room_str = room.decode('utf-8').replace("blive:", "")
+                if room_str in excepted:
+                    continue
                 try:
-                    room_id = int(str.replace(room.decode('utf-8'), "blive:", ""))
+                    room_id = int(room_str)
                     subscibing.add(room_id)
                 except ValueError:
-                    print(f'位置房間號: {room}')
+                    print(f'房間號格式錯誤: {room_str}')
+                    excepted.add(room_str) # 過濾掉
+                
             listening = set(listenMap.keys())
             for to_listen in subscibing - listening:
                 if to_listen in started:
