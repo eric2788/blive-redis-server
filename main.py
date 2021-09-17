@@ -8,7 +8,7 @@ import time;
 import atexit;
 
 
-VERSION = 'v0.7'
+VERSION = 'v0.8'
 
 listenMap: Dict[int, bool] = dict()
 
@@ -39,14 +39,12 @@ async def startListen(room: int, name: str = None):
         return await startListen(room, name)
     
     print(f'{room} 直播間初始化完成。')
-    r.sadd("live_room_listening", room)
     send_live_room_status(room, "started")
     while room in listenMap and listenMap[room] == True:
         await asyncio.sleep(1)
     await task.close()
     print(f'已停止監聽直播間 {room}')
     del listenMap[room]
-    r.srem("live_room_listening", room)
     send_live_room_status(room, "stopped")
 
 def stopListen(room: int):
@@ -59,6 +57,7 @@ def runRoom(room: int):
 
 def send_live_room_status(room: int, status: str):
     info = {
+        'platform': 'bilibili',
         'id': room, 
         'status': status
     }
@@ -70,7 +69,6 @@ def on_program_terminate():
     print(f'程序正在關閉...')
     try:
         send_live_room_status(-1, "server-closed")
-        r.delete("live_room_listening")
         r.close()
     except redis.exceptions.ConnectionError as e:
         print(f'關閉 Redis 時出現錯誤: {e}')
