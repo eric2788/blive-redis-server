@@ -1,14 +1,15 @@
 {
-    "host": "127.0.0.1",
-    "port": 6379,
-    "database": 0,
-    "password": "",
-    "listens":
-    [
-     "DANMU_MSG", 
-     "SEND_GIFT", 
-     "GUARD_BUY", 
-     "SUPER_CHAT_MESSAGE",
-     "INTERACT_WORD"
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "database": 0,
+        "password": ""
+    },
+    "listens": [
+        "DANMU_MSG",
+        "SEND_GIFT",
+        "GUARD_BUY",
+        "SUPER_CHAT_MESSAGE",
+        "INTERACT_WORD"
     ]
 }
