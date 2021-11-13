@@ -59,7 +59,7 @@ async def start_listen(room: int, name: str = None):
 def stopListen(room: int):
     listenMap[room] = False
 
-async def launch_server():
+async def launch_server(max_channels: int = 500):
 
     global redis, started, excepted
 
@@ -71,7 +71,7 @@ async def launch_server():
 
     try:
         # Using thread pool
-        with ThreadPoolExecutor() as pool:
+        with ThreadPoolExecutor(max_workers=max_channels, thread_name_prefix="blibili-live") as pool:
 
             while True:
 
@@ -125,9 +125,10 @@ if __name__ == '__main__':
     f = open('./settings/config.json')
     data = json.load(f)
     listen = data['listens']
+    max_channels = data['max_channels']
     hookSpider(listen)
     logging.info(f'將會監控的指令: {Spider.TO_LISTEN}')
-    asyncio.run(launch_server())
+    asyncio.run(launch_server(max_channels))
 
     
     

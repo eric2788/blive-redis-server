@@ -11,5 +11,6 @@
         "GUARD_BUY",
         "SUPER_CHAT_MESSAGE",
         "INTERACT_WORD"
-    ]
+    ],
+    "max_channels": 500
 }
