@@ -22,15 +22,14 @@ class Spider(BLiveClient):
     def to_redis_message(self, command, data):
         info = {
             'command': command,
-            'data': {
+            'live_info': {
                 'uid': self.bilibili_uid,
                 'title': self.title,
                 'name': self.name,
-                'room': self.nick_id,
-                'cover': self.user_cover,
-                'real_room': self.room_id,
-                'content': data
-            }
+                'room_id': self.room_id,
+                'cover': self.user_cover
+            },
+            'content': data
         }
         return json.dumps(info)
 

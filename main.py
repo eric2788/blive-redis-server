@@ -6,7 +6,7 @@ from redis_utils import initRedis, send_live_room_status
 import time, logging, json, asyncio;
 
 
-VERSION = 'v0.9'
+VERSION = 'v1.1'
 
 listenMap: Dict[int, bool] = dict()
 
