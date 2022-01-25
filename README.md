@@ -1,3 +1,6 @@
+**已棄用，詳見 [PlatformsCrawler](https://github.com/eric2788/platformscrawler)**
+
+
 本 python 程序 為一個 按需打開WS的監控伺服器，透過監聽 pubsub channels 中含 blive:<房間號> 格式的 channel 來打開所需的B站直播間WS監控。
 當監測到目前正在監控的 直播間號 不在 pubsub channels 內的列表時，它將自動關閉該房間號的WS監控。
 
